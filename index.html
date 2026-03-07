@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terraform — Guía Visual desde Cero</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0a0e1a;
+    --surface:  #111827;
+    --card:     #161e2e;
+    --border:   #1e2d45;
+    --teal:     #00d4aa;
+    --violet:   #7c5cfc;
+    --amber:    #f5a623;
+    --rose:     #ff4d6d;
+    --sky:      #38bdf8;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --code-bg:  #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 40px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 30%, rgba(124,92,252,.18) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 70%, rgba(0,212,170,.12) 0%, transparent 60%);
+  }
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridPulse 8s ease-in-out infinite;
+  }
+  @keyframes gridPulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+
+  .hero-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,92,252,.15);
+    border: 1px solid rgba(124,92,252,.4);
+    border-radius: 40px;
+    padding: 6px 18px;
+    font-size: .75rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--violet);
+    margin-bottom: 32px;
+    animation: fadeUp .8s ease both;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+  .hero h1 {
+    position: relative;
+    font-size: clamp(3.5rem, 10vw, 8rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.03em;
+    background: linear-gradient(135deg, #fff 30%, var(--teal) 65%, var(--violet) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeUp .8s .1s ease both;
+  }
+  .hero-sub {
+    position: relative;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: var(--muted);
+    max-width: 580px;
+    margin: 20px auto 48px;
+    animation: fadeUp .8s .2s ease both;
+  }
+  .hero-pills {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    animation: fadeUp .8s .3s ease both;
+  }
+  .pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-size: .85rem;
+    font-family: 'Space Mono', monospace;
+    transition: border-color .3s, transform .3s;
+  }
+  .pill:hover { border-color: var(--teal); transform: translateY(-3px); }
+  .pill-icon { font-size: 1.2rem; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
+
+  /* ── SECTIONS ── */
+  section { padding: 80px 40px; max-width: 1200px; margin: 0 auto; }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .tag-teal  { color: var(--teal);   }
+  .tag-violet{ color: var(--violet); }
+  .tag-amber { color: var(--amber);  }
+  .tag-sky   { color: var(--sky);    }
+  .tag-rose  { color: var(--rose);   }
+
+  .section-tag::before {
+    content: '';
+    display: block;
+    width: 20px; height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+  }
+
+  h2 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -.03em;
+    line-height: 1.15;
+    margin-bottom: 48px;
+  }
+  h2 span { color: var(--teal); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0;
+  }
+
+  /* ── MODULE 1: QUÉ ES ── */
+  .iac-compare {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 60px;
+  }
+  .compare-col {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+  }
+  .compare-col.bad  { border-color: rgba(255,77,109,.3); }
+  .compare-col.good { border-color: rgba(0,212,170,.3); }
+  .compare-title {
+    font-size: .75rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 20px;
+  }
+  .compare-title.bad-t  { color: var(--rose); }
+  .compare-title.good-t { color: var(--teal); }
+  .compare-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    margin-bottom: 14px;
+    font-size: .9rem;
+    color: var(--muted);
+  }
+  .compare-item .ci { font-size: 1rem; flex-shrink: 0; }
+  .vs-badge {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 56px; height: 56px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+    font-size: .9rem;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  /* ── FEATURES GRID ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    transition: transform .3s, border-color .3s, box-shadow .3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top left, var(--glow, transparent) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity .3s;
+    pointer-events: none;
+  }
+  .feature-card:hover { transform: translateY(-5px); box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+  .feature-card:hover::after { opacity: 1; }
+  .feature-card:hover { border-color: var(--card-accent, var(--border)); }
+
+  .fc-icon { font-size: 2.2rem; margin-bottom: 16px; display: block; }
+  .fc-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
+  .fc-desc  { font-size: .85rem; color: var(--muted); line-height: 1.5; }
+
+  /* ── COMMANDS ── */
+  .commands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .cmd-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: transform .2s, border-color .2s;
+  }
+  .cmd-card:hover { transform: translateX(6px); border-color: var(--teal); }
+  .cmd-num {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: rgba(0,212,170,.12);
+    border: 1px solid rgba(0,212,170,.25);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: .75rem;
+    color: var(--teal);
+    flex-shrink: 0;
+  }
+  .cmd-info { flex: 1; }
+  .cmd-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .9rem;
+    color: var(--teal);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .cmd-desc { font-size: .82rem; color: var(--muted); }
+
+  /* ── CODE BLOCK ── */
+  .code-wrap {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 24px 0;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: rgba(255,255,255,.03);
+    border-bottom: 1px solid var(--border);
+  }
+  .dot-r { width: 10px; height: 10px; border-radius: 50%; background: #ff5f57; }
+  .dot-y { width: 10px; height: 10px; border-radius: 50%; background: #febc2e; }
+  .dot-g { width: 10px; height: 10px; border-radius: 50%; background: #28c840; }
+  .code-filename {
+    margin-left: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .75rem;
+    color: var(--muted);
+  }
+  pre {
+    padding: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .82rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: #cdd9e5;
+  }
+  .kw   { color: #f47067; }
+  .str  { color: #96d0ff; }
+  .val  { color: #dcbdfb; }
+  .cmt  { color: var(--muted); font-style: italic; }
+  .var  { color: var(--teal); }
+  .fn   { color: var(--amber); }
+
+  /* ── HCL TYPES TABLE ── */
+  .hcl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 48px;
+  }
+  .hcl-type {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    transition: transform .2s;
+  }
+  .hcl-type:hover { transform: scale(1.03); }
+  .hcl-keyword {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--amber);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .hcl-desc { font-size: .82rem; color: var(--muted); }
+
+  /* ── WORKFLOW ── */
+  .workflow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 0 0 48px;
+    overflow-x: auto;
+    padding: 8px 0 24px;
+  }
+  .wf-step {
+    flex: 1;
+    min-width: 140px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px 0 0 16px;
+    padding: 24px 20px;
+    text-align: center;
+    position: relative;
+    transition: transform .2s, border-color .2s;
+  }
+  .wf-step + .wf-step { border-radius: 0; border-left: none; }
+  .wf-step:last-child  { border-radius: 0 16px 16px 0; }
+  .wf-step:hover { transform: scaleY(1.04); z-index: 1; border-color: var(--teal); }
+  .wf-arrow {
+    display: flex; align-items: center;
+    color: var(--muted);
+    font-size: 1rem;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .wf-icon { font-size: 1.8rem; margin-bottom: 10px; display: block; }
+  .wf-num  {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--violet);
+    color: #fff;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: .68rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: .05em;
+  }
+  .wf-title { font-size: .82rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .wf-cmd   { font-family: 'JetBrains Mono', monospace; font-size: .72rem; color: var(--teal); }
+
+  /* ── MODULES ── */
+  .module-anatomy {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .tree-card {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .85rem;
+    line-height: 2;
+  }
+  .tree-folder { color: var(--amber); }
+  .tree-file   { color: var(--sky); }
+  .tree-comment{ color: var(--muted); font-style: italic; }
+  .tree-line { display: block; }
+
+  .module-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .mb-item {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .mb-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .mb-title { font-size: .9rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .mb-desc  { font-size: .82rem; color: var(--muted); }
+
+  /* ── ADVANCED ── */
+  .advanced-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .adv-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .adv-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .adv-icon { font-size: 1.6rem; }
+  .adv-keyword {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--amber);
+  }
+  .adv-subtitle { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+  .adv-body { padding: 20px 24px; }
+  .adv-body pre { padding: 0; font-size: .78rem; }
+
+  /* ── BEST PRACTICES ── */
+  .bp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  .bp-card {
+    border-radius: 20px;
+    padding: 28px;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  .bp-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--bg-grad);
+    opacity: .08;
+  }
+  .bp-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--accent);
+    opacity: .25;
+    position: absolute;
+    top: 16px; right: 24px;
+    line-height: 1;
+  }
+  .bp-icon { font-size: 2rem; margin-bottom: 14px; display: block; }
+  .bp-title { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .bp-list  { list-style: none; }
+  .bp-list li {
+    font-size: .82rem;
+    color: var(--muted);
+    padding: 4px 0;
+    display: flex; gap: 8px;
+  }
+  .bp-list li::before { content: '—'; color: var(--accent); flex-shrink: 0; }
+
+  /* ── ROADMAP ── */
+  .roadmap {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .week-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    transition: transform .3s, border-color .3s;
+  }
+  .week-card:hover { transform: translateY(-6px); border-color: var(--violet); }
+  .week-label {
+    font-family: 'Space Mono', monospace;
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--violet);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .week-title { font-size: .95rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+  .week-items { list-style: none; }
+  .week-items li {
+    font-size: .8rem;
+    color: var(--muted);
+    padding: 3px 0;
+    display: flex; gap: 8px;
+  }
+  .week-items li::before { content: '→'; color: var(--teal); }
+  .week-progress {
+    margin-top: 16px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .week-progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--violet), var(--teal));
+  }
+
+  /* ── STATE DIAGRAM ── */
+  .state-flow {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+  .sf-col {
+    flex: 1;
+    padding: 32px 28px;
+    text-align: center;
+    position: relative;
+  }
+  .sf-col + .sf-col::before {
+    content: '→';
+    position: absolute;
+    left: -16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.4rem;
+    color: var(--muted);
+  }
+  .sf-col:nth-child(1) { background: rgba(56,189,248,.05); border-right: 1px solid var(--border); }
+  .sf-col:nth-child(2) { background: rgba(124,92,252,.05); border-right: 1px solid var(--border); }
+  .sf-col:nth-child(3) { background: rgba(0,212,170,.05); }
+  .sf-icon  { font-size: 2.5rem; margin-bottom: 14px; display: block; }
+  .sf-title { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .sf-desc  { font-size: .82rem; color: var(--muted); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 80px 40px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: .85rem;
+  }
+  footer .cert-box {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid rgba(124,92,252,.4);
+    border-radius: 24px;
+    padding: 40px 60px;
+    margin-bottom: 48px;
+  }
+  .cert-emoji { font-size: 3rem; }
+  .cert-title { font-size: 1.3rem; font-weight: 800; color: #fff; letter-spacing: -.02em; }
+  .cert-sub   { font-size: .85rem; color: var(--muted); }
+  .cert-badge {
+    background: rgba(124,92,252,.15);
+    border: 1px solid rgba(124,92,252,.4);
+    border-radius: 40px;
+    padding: 6px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: .75rem;
+    color: var(--violet);
+  }
+
+  @media (max-width: 768px) {
+    .iac-compare { grid-template-columns: 1fr; }
+    .vs-badge { display: none; }
+    .module-anatomy { grid-template-columns: 1fr; }
+    .advanced-grid  { grid-template-columns: 1fr; }
+    .roadmap { grid-template-columns: repeat(2, 1fr); }
+    .state-flow { flex-direction: column; }
+    .sf-col + .sf-col::before { content: '↓'; left: 50%; top: -16px; }
+    section { padding: 60px 20px; }
+    .workflow { gap: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ HERO ══════════ -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-badge"><span class="dot"></span>Infrastructure as Code · HashiCorp</div>
+  <div style="position:relative;margin-bottom:16px;font-family:'Space Mono',monospace;font-size:.75rem;color:#64748b;letter-spacing:.08em;">por <span style="color:#00d4aa;font-weight:700;">Ricardo Edreira</span></div>
+  <h1>TERRAFORM</h1>
+  <p class="hero-sub">Guía visual completa para dominar la automatización de infraestructura cloud desde cero</p>
+  <div class="hero-pills">
+    <div class="pill"><span class="pill-icon">🌱</span>Nivel principiante</div>
+    <div class="pill"><span class="pill-icon">⏱</span>40–60 horas</div>
+    <div class="pill"><span class="pill-icon">☁️</span>Multi-cloud</div>
+    <div class="pill"><span class="pill-icon">📦</span>11 módulos</div>
+    <div class="pill"><span class="pill-icon">🎯</span>Proyectos reales</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════ ¿QUÉ ES? ══════════ -->
+<section>
+  <div class="section-tag tag-teal">Módulo 01</div>
+  <h2>¿Por qué <span>Infrastructure as Code</span>?</h2>
+
+  <div class="iac-compare">
+    <div class="compare-col bad">
+      <div class="compare-title bad-t">❌ Manual / Tradicional</div>
+      <div class="compare-item"><span class="ci">🐭</span>Configuración click a click en la consola</div>
+      <div class="compare-item"><span class="ci">🌀</span>Difícil de replicar en otro entorno</div>
+      <div class="compare-item"><span class="ci">📭</span>Sin historial de cambios</div>
+      <div class="compare-item"><span class="ci">🧍</span>Depende de una sola persona</div>
+      <div class="compare-item"><span class="ci">❄️</span>Snowflake servers: nunca dos iguales</div>
+    </div>
+    <div class="vs-badge">VS</div>
+    <div class="compare-col good">
+      <div class="compare-title good-t">✅ Infrastructure as Code</div>
+      <div class="compare-item"><span class="ci">📝</span>Infraestructura definida en archivos .tf</div>
+      <div class="compare-item"><span class="ci">♻️</span>Reproducible en cualquier entorno</div>
+      <div class="compare-item"><span class="ci">📚</span>Control de versiones con Git</div>
+      <div class="compare-item"><span class="ci">👥</span>Colaborativo y documentado</div>
+      <div class="compare-item"><span class="ci">🔑</span>Entornos idénticos garantizados</div>
+    </div>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card" style="--glow:rgba(0,212,170,.15);--card-accent:rgba(0,212,170,.4)">
+      <span class="fc-icon">📋</span>
+      <div class="fc-title">Declarativo</div>
+      <div class="fc-desc">Describes el estado DESEADO. Terraform calcula automáticamente cómo llegar a él.</div>
+    </div>
+    <div class="feature-card" style="--glow:rgba(124,92,252,.15);--card-accent:rgba(124,92,252,.4)">
+      <span class="fc-icon">🌐</span>
+      <div class="fc-title">Multi-cloud</div>
+      <div class="fc-desc">AWS, Azure, GCP, Kubernetes y más de 1.000 providers disponibles en el Registry.</div>
+    </div>
+    <div class="feature-card" style="--glow:rgba(245,166,35,.15);--card-accent:rgba(245,166,35,.4)">
+      <span class="fc-icon">👁️</span>
+      <div class="fc-title">Plan antes de ejecutar</div>
+      <div class="fc-desc">terraform plan muestra exactamente qué va a cambiar antes de tocar nada en la nube.</div>
+    </div>
+    <div class="feature-card" style="--glow:rgba(56,189,248,.15);--card-accent:rgba(56,189,248,.4)">
+      <span class="fc-icon">🔁</span>
+      <div class="fc-title">Idempotente</div>
+      <div class="fc-desc">Aplica el mismo código 10 veces: el resultado es siempre el mismo. Sin efectos secundarios.</div>
+    </div>
+    <div class="feature-card" style="--glow:rgba(255,77,109,.15);--card-accent:rgba(255,77,109,.4)">
+      <span class="fc-icon">🧩</span>
+      <div class="fc-title">Modular</div>
+      <div class="fc-desc">Reutiliza bloques de infraestructura entre proyectos como si fueran librería de funciones.</div>
+    </div>
+    <div class="feature-card" style="--glow:rgba(0,212,170,.15);--card-accent:rgba(0,212,170,.4)">
+      <span class="fc-icon">📊</span>
+      <div class="fc-title">State Management</div>
+      <div class="fc-desc">Mantiene un mapa entre tu código y los recursos reales desplegados en la nube.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ WORKFLOW ══════════ -->
+<section>
+  <div class="section-tag tag-violet">Módulo 02 — 04</div>
+  <h2>El <span>flujo de trabajo</span> de Terraform</h2>
+
+  <div class="workflow">
+    <div class="wf-step">
+      <span class="wf-num">01</span>
+      <span class="wf-icon">📁</span>
+      <div class="wf-title">Escribir</div>
+      <div class="wf-cmd">.tf files</div>
+    </div>
+    <div class="wf-step">
+      <span class="wf-num">02</span>
+      <span class="wf-icon">⚡</span>
+      <div class="wf-title">Init</div>
+      <div class="wf-cmd">terraform init</div>
+    </div>
+    <div class="wf-step">
+      <span class="wf-num">03</span>
+      <span class="wf-icon">✔️</span>
+      <div class="wf-title">Validar</div>
+      <div class="wf-cmd">terraform validate</div>
+    </div>
+    <div class="wf-step">
+      <span class="wf-num">04</span>
+      <span class="wf-icon">🔍</span>
+      <div class="wf-title">Plan</div>
+      <div class="wf-cmd">terraform plan</div>
+    </div>
+    <div class="wf-step">
+      <span class="wf-num">05</span>
+      <span class="wf-icon">🚀</span>
+      <div class="wf-title">Apply</div>
+      <div class="wf-cmd">terraform apply</div>
+    </div>
+    <div class="wf-step">
+      <span class="wf-num">06</span>
+      <span class="wf-icon">📤</span>
+      <div class="wf-title">Outputs</div>
+      <div class="wf-cmd">terraform output</div>
+    </div>
+    <div class="wf-step">
+      <span class="wf-num">07</span>
+      <span class="wf-icon">🗑️</span>
+      <div class="wf-title">Destroy</div>
+      <div class="wf-cmd">terraform destroy</div>
+    </div>
+  </div>
+
+  <div class="commands-grid">
+    <div class="cmd-card"><div class="cmd-num">01</div><div class="cmd-info"><div class="cmd-name">terraform init</div><div class="cmd-desc">Descarga providers y módulos. Ejecutar siempre al clonar o añadir un nuevo provider.</div></div></div>
+    <div class="cmd-card"><div class="cmd-num">02</div><div class="cmd-info"><div class="cmd-name">terraform plan</div><div class="cmd-desc">Muestra (+) recursos a crear, (~) a modificar y (-) a destruir. Tu mejor aliado.</div></div></div>
+    <div class="cmd-card"><div class="cmd-num">03</div><div class="cmd-info"><div class="cmd-name">terraform apply</div><div class="cmd-desc">Aplica los cambios. Pide confirmación interactiva antes de ejecutar.</div></div></div>
+    <div class="cmd-card"><div class="cmd-num">04</div><div class="cmd-info"><div class="cmd-name">terraform validate</div><div class="cmd-desc">Verifica la sintaxis HCL sin conectarse a ningún provider.</div></div></div>
+    <div class="cmd-card"><div class="cmd-num">05</div><div class="cmd-info"><div class="cmd-name">terraform fmt</div><div class="cmd-desc">Formatea el código al estilo oficial. Úsalo antes de cada commit.</div></div></div>
+    <div class="cmd-card"><div class="cmd-num">06</div><div class="cmd-info"><div class="cmd-name">terraform state list</div><div class="cmd-desc">Lista todos los recursos gestionados en el state actual.</div></div></div>
+    <div class="cmd-card"><div class="cmd-num">07</div><div class="cmd-info"><div class="cmd-name">terraform import</div><div class="cmd-desc">Importa un recurso existente en la nube al estado de Terraform.</div></div></div>
+    <div class="cmd-card"><div class="cmd-num">08</div><div class="cmd-info"><div class="cmd-name">terraform destroy</div><div class="cmd-desc">Destruye toda la infraestructura. ⚠️ Pide siempre confirmación explícita.</div></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ HCL ══════════ -->
+<section>
+  <div class="section-tag tag-amber">Módulo 03</div>
+  <h2>Fundamentos de <span>HCL</span></h2>
+
+  <div class="hcl-grid">
+    <div class="hcl-type"><span class="hcl-keyword">terraform {}</span><div class="hcl-desc">Versión requerida, backend remoto y providers necesarios.</div></div>
+    <div class="hcl-type"><span class="hcl-keyword">provider {}</span><div class="hcl-desc">Configuración del provider (AWS, GCP, Azure). Region, credenciales, etc.</div></div>
+    <div class="hcl-type"><span class="hcl-keyword">resource {}</span><div class="hcl-desc">El bloque principal. Define cada recurso cloud: VM, bucket, base de datos…</div></div>
+    <div class="hcl-type"><span class="hcl-keyword">variable {}</span><div class="hcl-desc">Inputs parametrizables. Type, default y description obligatorios.</div></div>
+    <div class="hcl-type"><span class="hcl-keyword">output {}</span><div class="hcl-desc">Valores exportados al finalizar. IP, ARNs, URLs accesibles vía CLI.</div></div>
+    <div class="hcl-type"><span class="hcl-keyword">locals {}</span><div class="hcl-desc">Variables calculadas localmente. Evita repetición de expresiones complejas.</div></div>
+    <div class="hcl-type"><span class="hcl-keyword">data {}</span><div class="hcl-desc">Consulta recursos ya existentes (sólo lectura). AMIs, VPCs, zonas DNS.</div></div>
+    <div class="hcl-type"><span class="hcl-keyword">module {}</span><div class="hcl-desc">Instancia un módulo reutilizable local o del Terraform Registry.</div></div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="code-filename">main.tf · Ejemplo completo</span></div>
+    <pre><span class="cmt"># Configuración del provider</span>
+<span class="kw">provider</span> <span class="str">"aws"</span> {
+  <span class="fn">region</span> = <span class="var">var</span>.aws_region
+}
+
+<span class="cmt"># Data source: busca la AMI más reciente</span>
+<span class="kw">data</span> <span class="str">"aws_ami"</span> <span class="str">"amazon_linux"</span> {
+  most_recent = <span class="val">true</span>
+  owners      = [<span class="str">"amazon"</span>]
+  filter {
+    name   = <span class="str">"name"</span>
+    values = [<span class="str">"al2023-ami-*-x86_64"</span>]
+  }
+}
+
+<span class="cmt"># Recurso: instancia EC2</span>
+<span class="kw">resource</span> <span class="str">"aws_instance"</span> <span class="str">"web"</span> {
+  ami           = <span class="var">data</span>.aws_ami.amazon_linux.id
+  instance_type = <span class="var">var</span>.instance_type
+
+  tags = {
+    Name        = <span class="str">"${</span><span class="var">var</span>.environment<span class="str">}-web-server"</span>
+    Environment = <span class="var">var</span>.environment
+    ManagedBy   = <span class="str">"Terraform"</span>
+  }
+}
+
+<span class="cmt"># Output: exponer la IP pública</span>
+<span class="kw">output</span> <span class="str">"public_ip"</span> {
+  description = <span class="str">"IP pública del servidor web"</span>
+  value       = <span class="var">aws_instance</span>.web.public_ip
+}</pre>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="code-filename">variables.tf · Tipos de variables</span></div>
+    <pre><span class="cmt"># string</span>
+<span class="kw">variable</span> <span class="str">"aws_region"</span>   { type = <span class="val">string</span>;  default = <span class="str">"us-east-1"</span> }
+
+<span class="cmt"># number</span>
+<span class="kw">variable</span> <span class="str">"instance_count"</span> { type = <span class="val">number</span>;  default = <span class="val">1</span> }
+
+<span class="cmt"># bool</span>
+<span class="kw">variable</span> <span class="str">"enable_https"</span>   { type = <span class="val">bool</span>;    default = <span class="val">true</span> }
+
+<span class="cmt"># list(string)</span>
+<span class="kw">variable</span> <span class="str">"azs"</span>            { type = <span class="val">list</span>(<span class="val">string</span>); default = [<span class="str">"us-east-1a"</span>, <span class="str">"us-east-1b"</span>] }
+
+<span class="cmt"># map(string)</span>
+<span class="kw">variable</span> <span class="str">"tags"</span>           { type = <span class="val">map</span>(<span class="val">string</span>);  default = { Env = <span class="str">"dev"</span> } }
+
+<span class="cmt"># Condicional ternario</span>
+<span class="fn">instance_type</span> = <span class="var">var</span>.environment == <span class="str">"prod"</span> ? <span class="str">"t3.large"</span> : <span class="str">"t3.micro"</span></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ STATE ══════════ -->
+<section>
+  <div class="section-tag tag-sky">Módulo 06</div>
+  <h2>Terraform <span>State</span></h2>
+
+  <div class="state-flow">
+    <div class="sf-col">
+      <span class="sf-icon">📝</span>
+      <div class="sf-title">Archivos .tf</div>
+      <div class="sf-desc">El estado DESEADO de la infraestructura que defines en código HCL</div>
+    </div>
+    <div class="sf-col">
+      <span class="sf-icon">🗺️</span>
+      <div class="sf-title">terraform.tfstate</div>
+      <div class="sf-desc">Mapa entre código y recursos reales. Terraform lo compara en cada plan</div>
+    </div>
+    <div class="sf-col">
+      <span class="sf-icon">☁️</span>
+      <div class="sf-title">Infraestructura Real</div>
+      <div class="sf-desc">Los recursos que realmente existen en AWS, GCP, Azure, etc.</div>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="code-filename">providers.tf · Remote State en S3 (recomendado para equipos)</span></div>
+    <pre><span class="kw">terraform</span> {
+  backend <span class="str">"s3"</span> {
+    bucket         = <span class="str">"mi-empresa-terraform-state"</span>
+    key            = <span class="str">"proyecto/terraform.tfstate"</span>
+    region         = <span class="str">"us-east-1"</span>
+    encrypt        = <span class="val">true</span>
+    dynamodb_table = <span class="str">"terraform-state-lock"</span>   <span class="cmt"># ← previene escrituras simultáneas</span>
+  }
+}</pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ MÓDULOS ══════════ -->
+<section>
+  <div class="section-tag tag-violet">Módulo 07</div>
+  <h2>Módulos <span>Reutilizables</span></h2>
+
+  <div class="module-anatomy">
+    <div>
+      <div class="tree-card">
+        <span class="tree-line"><span class="tree-folder">📁 modules/</span></span>
+        <span class="tree-line">└── <span class="tree-folder">📁 ec2-instance/</span></span>
+        <span class="tree-line">    ├── <span class="tree-file">main.tf</span>        <span class="tree-comment">← recursos</span></span>
+        <span class="tree-line">    ├── <span class="tree-file">variables.tf</span>   <span class="tree-comment">← inputs</span></span>
+        <span class="tree-line">    ├── <span class="tree-file">outputs.tf</span>     <span class="tree-comment">← exports</span></span>
+        <span class="tree-line">    └── <span class="tree-file">README.md</span>      <span class="tree-comment">← docs</span></span>
+        <span class="tree-line">&nbsp;</span>
+        <span class="tree-line"><span class="tree-folder">📁 root/</span></span>
+        <span class="tree-line">├── <span class="tree-file">main.tf</span></span>
+        <span class="tree-line">├── <span class="tree-file">variables.tf</span></span>
+        <span class="tree-line">├── <span class="tree-file">outputs.tf</span></span>
+        <span class="tree-line">└── <span class="tree-file">providers.tf</span></span>
+      </div>
+
+      <div class="code-wrap" style="margin-top:20px">
+        <div class="code-header"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="code-filename">main.tf · Instanciar módulo</span></div>
+        <pre><span class="kw">module</span> <span class="str">"web"</span> {
+  <span class="cmt"># Módulo local</span>
+  source        = <span class="str">"./modules/ec2-instance"</span>
+  name          = <span class="str">"web-prod"</span>
+  instance_type = <span class="str">"t3.medium"</span>
+}
+
+<span class="kw">module</span> <span class="str">"vpc"</span> {
+  <span class="cmt"># Módulo del Registry</span>
+  source  = <span class="str">"terraform-aws-modules/vpc/aws"</span>
+  version = <span class="str">"5.0.0"</span>
+  name    = <span class="str">"mi-vpc"</span>
+  cidr    = <span class="str">"10.0.0.0/16"</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="module-benefits">
+      <div class="mb-item">
+        <span class="mb-icon">♻️</span>
+        <div><div class="mb-title">Reutilización</div><div class="mb-desc">Escribe la lógica una vez, úsala en dev, staging y prod sin duplicar código.</div></div>
+      </div>
+      <div class="mb-item">
+        <span class="mb-icon">🔒</span>
+        <div><div class="mb-title">Encapsulación</div><div class="mb-desc">Oculta la complejidad interna. El consumidor sólo ve los inputs y outputs.</div></div>
+      </div>
+      <div class="mb-item">
+        <span class="mb-icon">🧪</span>
+        <div><div class="mb-title">Testeable</div><div class="mb-desc">Los módulos aislados son mucho más fáciles de probar con Terratest o terraform test.</div></div>
+      </div>
+      <div class="mb-item">
+        <span class="mb-icon">🌐</span>
+        <div><div class="mb-title">Registry Público</div><div class="mb-desc">registry.terraform.io tiene módulos verificados para VPC, EKS, RDS y mucho más.</div></div>
+      </div>
+      <div class="mb-item">
+        <span class="mb-icon">🏢</span>
+        <div><div class="mb-title">Módulos Internos</div><div class="mb-desc">Crea tu propio catálogo empresarial de módulos aprobados y estandarizados.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ AVANZADO ══════════ -->
+<section>
+  <div class="section-tag tag-amber">Módulo 08</div>
+  <h2>Construcciones <span>Avanzadas</span></h2>
+
+  <div class="advanced-grid">
+    <div class="adv-card">
+      <div class="adv-header">
+        <span class="adv-icon">🔢</span>
+        <div><div class="adv-keyword">count</div><div class="adv-subtitle">Crear N copias de un recurso</div></div>
+      </div>
+      <div class="adv-body">
+        <pre><span class="kw">resource</span> <span class="str">"aws_instance"</span> <span class="str">"servers"</span> {
+  count         = <span class="val">3</span>
+  instance_type = <span class="str">"t2.micro"</span>
+  tags = { Name = <span class="str">"server-${count.index}"</span> }
+}
+<span class="cmt"># Acceso: aws_instance.servers[0].id</span>
+<span class="cmt"># Todos:  aws_instance.servers[*].id</span></pre>
+      </div>
+    </div>
+
+    <div class="adv-card">
+      <div class="adv-header">
+        <span class="adv-icon">🗂️</span>
+        <div><div class="adv-keyword">for_each</div><div class="adv-subtitle">Crear recursos desde un mapa o set</div></div>
+      </div>
+      <div class="adv-body">
+        <pre><span class="kw">resource</span> <span class="str">"aws_s3_bucket"</span> <span class="str">"storage"</span> {
+  for_each = {
+    images  = <span class="str">"us-east-1"</span>
+    backups = <span class="str">"us-west-2"</span>
+  }
+  bucket = <span class="str">"empresa-${each.key}"</span>
+}
+<span class="cmt"># Acceso: aws_s3_bucket.storage["images"]</span></pre>
+      </div>
+    </div>
+
+    <div class="adv-card">
+      <div class="adv-header">
+        <span class="adv-icon">🔗</span>
+        <div><div class="adv-keyword">depends_on</div><div class="adv-subtitle">Control explícito de dependencias</div></div>
+      </div>
+      <div class="adv-body">
+        <pre><span class="kw">resource</span> <span class="str">"aws_app"</span> <span class="str">"backend"</span> {
+  <span class="cmt"># Espera a que la BD esté lista</span>
+  depends_on = [
+    <span class="var">aws_db_instance</span>.database
+  ]
+  <span class="cmt"># ... resto de config</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="adv-card">
+      <div class="adv-header">
+        <span class="adv-icon">⚙️</span>
+        <div><div class="adv-keyword">lifecycle</div><div class="adv-subtitle">Controlar creación y destrucción</div></div>
+      </div>
+      <div class="adv-body">
+        <pre><span class="kw">resource</span> <span class="str">"aws_instance"</span> <span class="str">"web"</span> {
+  lifecycle {
+    <span class="cmt"># Crea nuevo antes de borrar el viejo</span>
+    create_before_destroy = <span class="val">true</span>
+    <span class="cmt"># Nunca destruir con terraform destroy</span>
+    prevent_destroy       = <span class="val">true</span>
+    <span class="cmt"># Ignorar cambios de tags en prod</span>
+    ignore_changes        = [tags]
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ BEST PRACTICES ══════════ -->
+<section>
+  <div class="section-tag tag-rose">Módulo 10</div>
+  <h2>Buenas <span>Prácticas</span></h2>
+
+  <div class="bp-grid">
+    <div class="bp-card" style="background:var(--card);border-color:rgba(0,212,170,.25);--accent:var(--teal);--bg-grad:var(--teal)">
+      <span class="bp-number">01</span>
+      <span class="bp-icon">📁</span>
+      <div class="bp-title">Estructura de archivos</div>
+      <ul class="bp-list">
+        <li>main.tf para recursos principales</li>
+        <li>variables.tf siempre con description</li>
+        <li>outputs.tf para valores exportados</li>
+        <li>providers.tf separado del código</li>
+      </ul>
+    </div>
+
+    <div class="bp-card" style="background:var(--card);border-color:rgba(255,77,109,.25);--accent:var(--rose);--bg-grad:var(--rose)">
+      <span class="bp-number">02</span>
+      <span class="bp-icon">🔐</span>
+      <div class="bp-title">Seguridad</div>
+      <ul class="bp-list">
+        <li>Nunca hardcodees credenciales</li>
+        <li>*.tfstate en .gitignore siempre</li>
+        <li>Usa variables de entorno o Vault</li>
+        <li>Activa cifrado en remote state</li>
+      </ul>
+    </div>
+
+    <div class="bp-card" style="background:var(--card);border-color:rgba(124,92,252,.25);--accent:var(--violet);--bg-grad:var(--violet)">
+      <span class="bp-number">03</span>
+      <span class="bp-icon">🏷️</span>
+      <div class="bp-title">Versionado</div>
+      <ul class="bp-list">
+        <li>Fija versiones de providers: ~> 5.0</li>
+        <li>Commitea .terraform.lock.hcl</li>
+        <li>Usa tags de Git para releases</li>
+        <li>Semver en módulos internos</li>
+      </ul>
+    </div>
+
+    <div class="bp-card" style="background:var(--card);border-color:rgba(245,166,35,.25);--accent:var(--amber);--bg-grad:var(--amber)">
+      <span class="bp-number">04</span>
+      <span class="bp-icon">🧪</span>
+      <div class="bp-title">Testing</div>
+      <ul class="bp-list">
+        <li>terraform validate en CI/CD</li>
+        <li>terraform plan en pull requests</li>
+        <li>Terratest para tests de integración</li>
+        <li>terraform test (nativo desde 1.6)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-wrap" style="margin-top:32px">
+    <div class="code-header"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div><span class="code-filename">.gitignore · Terraform</span></div>
+    <pre><span class="cmt"># State files — NUNCA subir al repo</span>
+*.tfstate
+*.tfstate.backup
+*.tfstate.d/
+
+<span class="cmt"># Directorio de providers descargados</span>
+.terraform/
+
+<span class="cmt"># Archivos de variables con secretos</span>
+terraform.tfvars
+*.auto.tfvars
+
+<span class="cmt"># Logs de crash</span>
+crash.log
+crash.*.log
+
+<span class="cmt"># Planes guardados (pueden contener secretos)</span>
+*.tfplan
+
+<span class="cmt"># .terraform.lock.hcl se RECOMIENDA commitear para reproducibilidad</span></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════ ROADMAP ══════════ -->
+<section>
+  <div class="section-tag tag-teal">Módulo 11</div>
+  <h2>Plan de Estudio <span>8 Semanas</span></h2>
+
+  <div class="roadmap">
+    <div class="week-card">
+      <span class="week-label">Semana 1</span>
+      <div class="week-title">Fundamentos</div>
+      <ul class="week-items">
+        <li>Instalar Terraform</li>
+        <li>Configurar AWS CLI</li>
+        <li>Entender IaC y HCL</li>
+        <li>Primer terraform init</li>
+      </ul>
+      <div class="week-progress"><div class="week-progress-fill" style="width:12%"></div></div>
+    </div>
+    <div class="week-card">
+      <span class="week-label">Semana 2</span>
+      <div class="week-title">HCL Avanzado</div>
+      <ul class="week-items">
+        <li>Variables y tipos</li>
+        <li>Outputs y locals</li>
+        <li>Data sources</li>
+        <li>Interpolación de strings</li>
+      </ul>
+      <div class="week-progress"><div class="week-progress-fill" style="width:25%"></div></div>
+    </div>
+    <div class="week-card">
+      <span class="week-label">Semana 3</span>
+      <div class="week-title">Primer Proyecto</div>
+      <ul class="week-items">
+        <li>EC2 + Security Group</li>
+        <li>Flujo init/plan/apply</li>
+        <li>Outputs en acción</li>
+        <li>User data scripts</li>
+      </ul>
+      <div class="week-progress"><div class="week-progress-fill" style="width:38%"></div></div>
+    </div>
+    <div class="week-card">
+      <span class="week-label">Semana 4</span>
+      <div class="week-title">State & Equipo</div>
+      <ul class="week-items">
+        <li>Remote state en S3</li>
+        <li>DynamoDB state lock</li>
+        <li>terraform state CLI</li>
+        <li>Importar recursos</li>
+      </ul>
+      <div class="week-progress"><div class="week-progress-fill" style="width:50%"></div></div>
+    </div>
+    <div class="week-card">
+      <span class="week-label">Semana 5</span>
+      <div class="week-title">Módulos</div>
+      <ul class="week-items">
+        <li>Crear módulo propio</li>
+        <li>Terraform Registry</li>
+        <li>Módulo VPC completa</li>
+        <li>Versionado de módulos</li>
+      </ul>
+      <div class="week-progress"><div class="week-progress-fill" style="width:62%"></div></div>
+    </div>
+    <div class="week-card">
+      <span class="week-label">Semana 6</span>
+      <div class="week-title">Avanzado</div>
+      <ul class="week-items">
+        <li>count y for_each</li>
+        <li>lifecycle rules</li>
+        <li>Workspaces dev/prod</li>
+        <li>Dynamic blocks</li>
+      </ul>
+      <div class="week-progress"><div class="week-progress-fill" style="width:75%"></div></div>
+    </div>
+    <div class="week-card">
+      <span class="week-label">Semana 7</span>
+      <div class="week-title">CI/CD</div>
+      <ul class="week-items">
+        <li>GitHub Actions + TF</li>
+        <li>Atlantis o Terraform Cloud</li>
+        <li>Policy as Code (OPA)</li>
+        <li>terraform test</li>
+      </ul>
+      <div class="week-progress"><div class="week-progress-fill" style="width:88%"></div></div>
+    </div>
+    <div class="week-card">
+      <span class="week-label">Semana 8</span>
+      <div class="week-title">Proyecto Final</div>
+      <ul class="week-items">
+        <li>VPC + ECS + RDS + ALB</li>
+        <li>Módulos propios</li>
+        <li>Multi-env pipeline</li>
+        <li>Preparar certificación</li>
+      </ul>
+      <div class="week-progress"><div class="week-progress-fill" style="width:100%"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div class="cert-box">
+    <span class="cert-emoji">🏆</span>
+    <div class="cert-title">HashiCorp Certified: Terraform Associate</div>
+    <div class="cert-sub">La certificación oficial reconocida en la industria para IaC con Terraform</div>
+    <div class="cert-badge">developer.hashicorp.com/certifications</div>
+  </div>
+  <p style="margin-bottom:12px;font-size:1rem;color:#e2e8f0;">Creado por <span style="font-weight:700;color:#00d4aa;">Ricardo Edreira</span></p>
+  <p>Guía de Terraform desde Cero · 2026</p>
+</footer>
+
+</body>
+</html>
